@@ -65,6 +65,10 @@ def make_terrain_stones():
 
 # Clase Heroe
 class Hero(Sprite):
+    height = pygame.display.Info().current_h
+    length = pygame.display.Info().current_w
+    hero_size = height // 10
+
     def __init__(self):
         super().__init__()
         self.sprite_sheet_idle = pygame.image.load("sprites/mono/PNG/Unarmed_Idle/Unarmed_Idle_full.png")
@@ -85,7 +89,9 @@ class Hero(Sprite):
         for j in range(num_sprites):
             rect = pygame.Rect(j * sprite_width, 0, sprite_width, sprite_height)
             sprite = self.sprite_sheet_idle.subsurface(rect)
-            self.sprites.append(sprite)
+            # Escalar el sprite
+            scaled_sprite = pygame.transform.scale(sprite, (sprite_width, sprite_height))
+            self.sprites.append(scaled_sprite)
         
         return self.sprites
 
