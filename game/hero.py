@@ -10,20 +10,28 @@ size = (length, height)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("Pantalla del joc")
 
-# Establir el fons de pantalla
-bg_img = pygame.image.load("assets/mapa/PNG/bg.png")
-bg_color = (160, 160, 160)
 
 class Block(Sprite):
-    size = 64  # Define the size of each block
+    height = pygame.display.Info().current_h
+    length = pygame.display.Info().current_w
+    rock_size = height // 10
+    quantitat_roques = height // rock_size * length // rock_size
+
     def __init__(self, x, y):
         super().__init__()
         # Es trindira que reescalar la imatge
-        self.image = pygame.image.load("assets/mapa/PNG/stones_6.png")  # Replace with the correct image path
-        self.image = pygame.transform.scale(self.image, (Block.size, Block.size))
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.rock_image = pygame.image.load("assets/mapa/PNG/stones_6.png")  # Replace with the correct image path
+        self.bg_image = pygame.image.load("assets/mapa/PNG/bg.png")
+        self.rock_image = pygame.transform.scale(self.rock_image, (Block.rock_size, Block.rock_size))
+        self.bg_image = pygame.transform.scale(self.bg_image, (Block.rock_size, Block.rock_size))
+        self.rect_bg = self.bg_image.get_rect()
+        self.rect_bg.x = x
+        self.rect_bg.y = y
+        self.rect_rock = self.rock_image.get_rect()
+        self.rect_bg.x = x
+        self.rect_bg.y = y
+        self.rect_rock.x = x
+        self.rect_rock.y = y
 
 def make_terrain():
     with open("assets/mapa.txt") as file:
@@ -34,8 +42,23 @@ def make_terrain():
             row = row.strip()  # Remove any trailing newline or whitespace
             for j in range(len(row)):
                 if row[j] == "#":
-                    coord_x = Block.size * j
-                    coord_y = Block.size * i
+                    coord_x = Block.rock_size * j
+                    coord_y = Block.rock_size * i
+                    terrain.append(Block(coord_x, coord_y))
+            i += 1
+    return terrain
+
+def make_terrain_stones():
+    with open("assets/mapa_roques.txt") as file:
+        i = 0
+        terrain = []
+        mapa = file.readlines()  # Read all lines from the file
+        for row in mapa:
+            row = row.strip()  # Remove any trailing newline or whitespace
+            for j in range(len(row)):
+                if row[j] == "#":
+                    coord_x = Block.rock_size * j
+                    coord_y = Block.rock_size * i
                     terrain.append(Block(coord_x, coord_y))
             i += 1
     return terrain
@@ -104,6 +127,7 @@ hero = Hero()
 
 # Generate terrain
 terrain = make_terrain()
+rocks = make_terrain_stones()
 
 # Main loop
 run = True
@@ -118,12 +142,13 @@ while run:
                 run = False
     
     hero.move(keys)
-    
-    screen.fill(bg_color)
 
     # Draw terrain
     for block in terrain:
-        screen.blit(block.image, block.rect)
+        screen.blit(block.bg_image, block.rect_bg)
+
+    for block in rocks:
+        screen.blit(block.rock_image, block.rect_rock)
 
     hero.update()
     hero.draw()
