@@ -14,7 +14,7 @@ pygame.display.set_caption("Pantalla del joc")
 bg_color = (160, 160, 160)
 
 # creem el logo
-logo = pygame.image.load("assets/IMG_20250220_090932.jpg")
+logo = pygame.image.load("assets/mapa/PNG/tree_1.png")
 logo = pygame.transform.scale(logo, (200, 100))
 logo_rect = logo.get_rect()
 logo_rect.center = (length // 2, height // 2)
