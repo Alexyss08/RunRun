@@ -15,18 +15,24 @@ bg_img = pygame.image.load("assets/mapa/PNG/bg.png")
 bg_color = (160, 160, 160)
 
 class Block(Sprite):
-    def __init__(self):
+    size = 64  # Define the size of each block
+    def __init__(self, x, y):
         super().__init__()
         # Es trindira que reescalar la imatge
-        self.image = pygame.image.load("assets/") # Carrega la imatge
-        self.image = pygame.transform.scale_by(self.image, (Block.size, Block.size))
-    
+        self.image = pygame.image.load("assets/mapa/PNG/stones_6.png")  # Replace with the correct image path
+        self.image = pygame.transform.scale(self.image, (Block.size, Block.size))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
 def make_terrain():
-    with open("mapa.txt") as file:
+    with open("assets/mapa.txt") as file:
         i = 0
         terrain = []
+        mapa = file.readlines()  # Read all lines from the file
         for row in mapa:
-            for j in range(len(ron)):
+            row = row.strip()  # Remove any trailing newline or whitespace
+            for j in range(len(row)):
                 if row[j] == "#":
                     coord_x = Block.size * j
                     coord_y = Block.size * i
@@ -38,7 +44,7 @@ def make_terrain():
 class Hero(Sprite):
     def __init__(self):
         super().__init__()
-        self.sprite_sheet_idle = pygame.image.load("sprites/MONOONOM/PNG/Unarmed_Idle/Unarmed_Idle_full.png")
+        self.sprite_sheet_idle = pygame.image.load("sprites/mono/PNG/Unarmed_Idle/Unarmed_Idle_full.png")
         self.sprite_sheet_run = pygame.image.load("sprites/mono/PNG/Unarmed_Run/Unarmed_Run_full.png")
         self.sprites = self.cut_sprites()
         self.sprite_idx = 0
@@ -96,6 +102,9 @@ clock = pygame.time.Clock()
 # HERO
 hero = Hero()
 
+# Generate terrain
+terrain = make_terrain()
+
 # Main loop
 run = True
 while run:
@@ -111,6 +120,10 @@ while run:
     hero.move(keys)
     
     screen.fill(bg_color)
+
+    # Draw terrain
+    for block in terrain:
+        screen.blit(block.image, block.rect)
 
     hero.update()
     hero.draw()
