@@ -38,7 +38,7 @@ def make_terrain():
 class Hero(Sprite):
     def __init__(self):
         super().__init__()
-        self.sprite_sheet_idle = pygame.image.load("sprites/monatronica/PNG/Unarmed_Idle/Unarmed_Idle_full.png")
+        self.sprite_sheet_idle = pygame.image.load("sprites/monatronica2000/PNG/Unarmed_Idle/Unarmed_Idle_full.png")
         self.sprite_sheet_run = pygame.image.load("sprites/mona/PNG/Unarmed_Run/Unarmed_Run_full.png")
         self.sprites = self.cut_sprites()
         self.sprite_idx = 0
