@@ -20,7 +20,6 @@ class Block(Sprite):
 
     def __init__(self, x, y):
         super().__init__()
-        # Es trindira que reescalar la imatge
         self.rock_image = pygame.image.load("assets/mapa/PNG/stones_6.png")  # Replace with the correct image path
         self.bg_image = pygame.image.load("assets/mapa/PNG/bg.png")
         self.rock_image = pygame.transform.scale(self.rock_image, (Block.rock_size, Block.rock_size))
@@ -32,16 +31,14 @@ class Block(Sprite):
         self.rect.x = x
         self.rect.y = y
 
-        """# Afegir un atribut rect per les colisions
-        self.rect = self.rock_image.get_rect()"""
 
 def make_terrain():
     with open("assets/mapa.txt") as file:
         i = 0
         terrain = []
-        mapa = file.readlines()  # Read all lines from the file
+        mapa = file.readlines()
         for row in mapa:
-            row = row.strip()  # Remove any trailing newline or whitespace
+            row = row.strip()
             for j in range(len(row)):
                 if row[j] == "#":
                     coord_x = Block.rock_size * j
@@ -50,13 +47,14 @@ def make_terrain():
             i += 1
     return terrain
 
+
 def make_terrain_stones():
     with open("assets/mapa_roques.txt") as file:
         i = 0
         terrain = []
-        mapa = file.readlines()  # Read all lines from the file
+        mapa = file.readlines()
         for row in mapa:
-            row = row.strip()  # Remove any trailing newline or whitespace
+            row = row.strip()
             for j in range(len(row)):
                 if row[j] == "#":
                     coord_x = Block.rock_size * j
@@ -64,6 +62,7 @@ def make_terrain_stones():
                     terrain.append(Block(coord_x, coord_y))
             i += 1
     return terrain
+
 
 # Crear groups de sprites per les colisions
 rocks_group = Group()
@@ -73,21 +72,24 @@ rocks = make_terrain_stones()
 for block in rocks:
     rocks_group.add(block)
 
+
 def horitzontal_collision(hero, rocks_group):
     block = pygame.sprite.spritecollideany(hero, rocks_group)
     if block:
-        if hero.rect.x > block.rect.x:
-            hero.rect.left = block.rect.right  
-        elif hero.rect.x < block.rect.x:
+        if hero.rect.right > block.rect.left and hero.rect.centerx < block.rect.centerx:
             hero.rect.right = block.rect.left
+        elif hero.rect.left < block.rect.right and hero.rect.centerx > block.rect.centerx:
+            hero.rect.left = block.rect.right
+
 
 def vertical_collision(hero, rocks_group):
     block = pygame.sprite.spritecollideany(hero, rocks_group)
     if block:
-        if hero.rect.y > block.rect.y:
-            hero.rect.top = block.rect.bottom
-        elif hero.rect.y < block.rect.y:
+        if hero.rect.bottom > block.rect.top and hero.rect.centery < block.rect.centery:
             hero.rect.bottom = block.rect.top
+        elif hero.rect.top < block.rect.bottom and hero.rect.centery > block.rect.centery:
+            hero.rect.top = block.rect.bottom
+
 
 # Clase Heroe
 class Hero(Sprite):
@@ -105,50 +107,67 @@ class Hero(Sprite):
         self.rect = self.img.get_rect()
         self.rect.x = (length - self.rect.width) // 2
         self.rect.y = (height - self.rect.height) // 2
-    
+
     def cut_sprites(self):
         sprite_width = 64
         sprite_height = 64
         num_sprites = 12
 
-        self.sprites = []
+        sprites = []
         for j in range(num_sprites):
             rect = pygame.Rect(j * sprite_width, 0, sprite_width, sprite_height)
             sprite = self.sprite_sheet_idle.subsurface(rect)
             # Escalar el sprite
             scaled_sprite = pygame.transform.scale(sprite, (sprite_width, sprite_height))
-            self.sprites.append(scaled_sprite)
-        
-        return self.sprites
+            sprites.append(scaled_sprite)
 
-    def move(self, keys):
+        return sprites
+
+    def move(self, keys, rocks_group):
         move = 30
+
+        # Simular movimiento horizontal
+        proposed_rect = self.rect.copy()
         if keys[pygame.K_LEFT]:
-            self.rect.x -= move
+            proposed_rect.x -= move
+            if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
+                self.rect.x -= move
             if self.rect.x < 0:
                 self.rect.x = length
+
         if keys[pygame.K_RIGHT]:
-            self.rect.x += move
+            proposed_rect.x += move
+            if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
+                self.rect.x += move
             if self.rect.x > length:
                 self.rect.x = 0
+
+        # Simular movimiento vertical
+        proposed_rect = self.rect.copy()
         if keys[pygame.K_UP]:
-            self.rect.y -= move
+            proposed_rect.y -= move
+            if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
+                self.rect.y -= move
             if self.rect.y < 0:
                 self.rect.y = height
+
         if keys[pygame.K_DOWN]:
-            self.rect.y += move
+            proposed_rect.y += move
+            if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
+                self.rect.y += move
             if self.rect.y > height:
                 self.rect.y = 0
-    
+
     def update(self):
         update_rate = 5
-        hero.sprite_idx += 1
-        if hero.sprite_idx >= update_rate * len(hero.sprites):
-            hero.sprite_idx = 0
-        self.img = self.sprites[self.sprite_idx // update_rate] 
+        self.sprite_idx += 1
+        if self.sprite_idx >= update_rate * len(self.sprites):
+            self.sprite_idx = 0
+        self.img = self.sprites[self.sprite_idx // update_rate]
 
     def draw(self):
         screen.blit(self.img, self.rect)
+
 
 # Configuración de FPS
 FPS = 30
@@ -172,8 +191,8 @@ while run:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 run = False
-    
-    hero.move(keys)
+
+    hero.move(keys, rocks_group)
 
     # Comprobar colisions
     horitzontal_collision(hero, rocks_group)
@@ -184,7 +203,7 @@ while run:
         screen.blit(block.bg_image, block.rect_bg)
 
     for block in rocks:
-        screen.blit(block.rock_image, block.rect_rock)
+        screen.blit(block.rock_image, block.rect)
 
     hero.update()
     hero.draw()
