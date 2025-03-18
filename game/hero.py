@@ -1,5 +1,6 @@
 import pygame
 from pygame.sprite import Sprite
+from pygame.sprite import Group
 
 pygame.init()
 
@@ -27,11 +28,12 @@ class Block(Sprite):
         self.rect_bg = self.bg_image.get_rect()
         self.rect_bg.x = x
         self.rect_bg.y = y
-        self.rect_rock = self.rock_image.get_rect()
-        self.rect_bg.x = x
-        self.rect_bg.y = y
-        self.rect_rock.x = x
-        self.rect_rock.y = y
+        self.rect = self.rock_image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+        """# Afegir un atribut rect per les colisions
+        self.rect = self.rock_image.get_rect()"""
 
 def make_terrain():
     with open("assets/mapa.txt") as file:
@@ -62,6 +64,30 @@ def make_terrain_stones():
                     terrain.append(Block(coord_x, coord_y))
             i += 1
     return terrain
+
+# Crear groups de sprites per les colisions
+rocks_group = Group()
+
+# Afagir blocs de roques al group
+rocks = make_terrain_stones()
+for block in rocks:
+    rocks_group.add(block)
+
+def horitzontal_collision(hero, rocks_group):
+    block = pygame.sprite.spritecollideany(hero, rocks_group)
+    if block:
+        if hero.rect.x > block.rect.x:
+            hero.rect.left = block.rect.right  
+        elif hero.rect.x < block.rect.x:
+            hero.rect.right = block.rect.left
+
+def vertical_collision(hero, rocks_group):
+    block = pygame.sprite.spritecollideany(hero, rocks_group)
+    if block:
+        if hero.rect.y > block.rect.y:
+            hero.rect.top = block.rect.bottom
+        elif hero.rect.y < block.rect.y:
+            hero.rect.bottom = block.rect.top
 
 # Clase Heroe
 class Hero(Sprite):
@@ -148,6 +174,10 @@ while run:
                 run = False
     
     hero.move(keys)
+
+    # Comprobar colisions
+    horitzontal_collision(hero, rocks_group)
+    vertical_collision(hero, rocks_group)
 
     # Draw terrain
     for block in terrain:
