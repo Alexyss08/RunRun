@@ -1,6 +1,6 @@
 import random
 
-def generate_random_map(rows=10, cols=18, characters="#G "):
+def generate_random_map(rows=10, cols=18, characters="#GT"):
     """
     Genera un mapa aleatorio con caracteres dados.
     
@@ -9,13 +9,9 @@ def generate_random_map(rows=10, cols=18, characters="#G "):
     :param characters: Cadena de caracteres posibles.
     :return: Lista de cadenas representando el mapa.
     """
-    weights = [0.4, 0.2, 0.6]
+    weights = [0.3, 0.02, 0.9] # Probabilidades de cada caracter
     
-    # Filtrar caracteres y pesos con peso mayor a 0
-    filtered_characters = [char for char, weight in zip(characters, weights) if weight > 0]
-    filtered_weights = [weight for weight in weights if weight > 0]
-    
-    myMap = [''.join(random.choices(filtered_characters, weights=filtered_weights, k=cols)) for _ in range(rows)]
+    myMap = [''.join(random.choices(characters, weights, k=cols)) for _ in range(rows)]
 
     return myMap
 
