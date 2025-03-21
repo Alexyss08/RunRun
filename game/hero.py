@@ -45,7 +45,7 @@ def make_terrain():
         for row in mapa:
             row = row.strip()
             for j in range(len(row)):
-                if row[j] == "#":
+                if row[j] == "T":
                     coord_x = Block.rock_size * j
                     coord_y = Block.rock_size * i
                     terrain.append(Block(coord_x, coord_y))
