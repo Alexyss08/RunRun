@@ -1,6 +1,6 @@
 import random
 
-def generate_random_map(rows=10, cols=18, characters="#G "):
+def generate_random_map(rows=10, cols=18, characters="#GT"):
     """
     Genera un mapa aleatorio con caracteres dados.
     
@@ -9,7 +9,11 @@ def generate_random_map(rows=10, cols=18, characters="#G "):
     :param characters: Cadena de caracteres posibles.
     :return: Lista de cadenas representando el mapa.
     """
-    return [''.join(random.choice(characters) for _ in range(cols)) for _ in range(rows)]
+    weights = [0.3, 0.02, 0.9] # Probabilidades de cada caracter
+    
+    myMap = [''.join(random.choices(characters, weights, k=cols)) for _ in range(rows)]
+
+    return myMap
 
 def save_map_to_file(map_data, file_path):
     """
