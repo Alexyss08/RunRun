@@ -71,6 +71,21 @@ def make_terrain_stones():
             i += 1
     return terrain
 
+def make_terrain_empty():
+    with open("assets/mapa_roques.txt") as file:
+        i = 0
+        terrain = []
+        mapa = file.readlines()
+        for row in mapa:
+            row = row.strip()
+            for j in range(len(row)):
+                if row[j] == "T":
+                    coord_x = Block.rock_size * j
+                    coord_y = Block.rock_size * i
+                    terrain.append(Block(coord_x, coord_y))
+            i += 1
+    return terrain
+
 gold_group = Group() # Crear un grupo de sprites para el oro
 
 def make_terrain_gold():
@@ -87,7 +102,7 @@ def make_terrain_gold():
                     terrain.append(Block(coord_x, coord_y))
             i += 1
     return terrain
-random_map = generate_random_map(rows=10, cols=18, characters="#G ") # Generar el mapa aleatorio
+random_map = generate_random_map(rows=10, cols=18, characters="#GT") # Generar el mapa aleatorio
 save_map_to_file(random_map, "assets/mapa_roques.txt") # Guardar el mapa en el archivo mapa_roques.txt
 rocks = make_terrain_stones() # Crear los bloques de rocas
 gold = make_terrain_gold() # Crear los bloques de oro
@@ -146,7 +161,7 @@ def vertical_collision(hero, rocks_group):
 class Hero(Sprite):
     height = pygame.display.Info().current_h
     length = pygame.display.Info().current_w
-    hero_size = height // 10
+    hero_size = height // 20
 
     def __init__(self):
         super().__init__()
@@ -166,29 +181,25 @@ class Hero(Sprite):
         sprite_width = 64
         sprite_height = 64
         num_sprites = 12
-        scale_factor = 3.5  # Escala el personaje
 
         sprites = []
         for j in range(num_sprites):
             rect = pygame.Rect(j * sprite_width, 0, sprite_width, sprite_height)
             sprite = self.sprite_sheet_idle.subsurface(rect).copy()  # Copia para evitar problemas
-            
+
             # Recortar el espacio transparente automáticamente
             bounding_rect = sprite.get_bounding_rect()
             sprite = sprite.subsurface(bounding_rect)
-
-            # Escalar el sprite
-            new_width = bounding_rect.width * scale_factor
-            new_height = bounding_rect.height * scale_factor
-            scaled_sprite = pygame.transform.scale(sprite, (new_width, new_height))
             
+            # Escalar el sprite al tamaño del héroe
+            scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
             sprites.append(scaled_sprite)
 
         return sprites
 
 
     def move(self, keys, rocks_group):
-        move = 30
+        move = 15
 
         # Simular movimiento horizontal
         proposed_rect = self.rect.copy()

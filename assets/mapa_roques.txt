@@ -1,10 +1,10 @@
-#   #G #GG#G  GG# 
-#    GG #  G ###G 
-#G### #G G#     #G
- GG#G#G G# ##  G #
-# #  G##G#G# #G# #
- G# G #      #GG#G
-##  G # GG   G    
-# G## GG#G#   #GGG
-#       #GG#GG##G 
-G # GG  G   G## G#
+T#TTTT#T#TT#TTTTT#
+#TTTTTTTTTT#TTTGTT
+TTT#TTGTTTT#TTTTTT
+T#T#TTTTTTT#TTT#TT
+#TTTTGTT##T#TT##TT
+TTTTTTTTTT#TTTTT#T
+TTTTT#T#TTT#TTTT#T
+T##TTTTTTTTT#TGTTT
+TTTT#T#TTTTTTTTTTT
+#TTT#TTT#T#TTGTTTT
