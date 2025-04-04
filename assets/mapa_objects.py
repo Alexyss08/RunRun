@@ -31,7 +31,3 @@ random_map = generate_random_map()
 
 # Guardar el mapa en el archivo mapa_roques.txt
 save_map_to_file(random_map, "assets/mapa_roques.txt")
-
-# Imprimir el mapa en la consola
-for row in random_map:
-    print(row)
