@@ -172,6 +172,8 @@ class Hero(Sprite):
         
         self.sprite_idx = 0
         self.img = self.sprites[self.sprite_idx]
+        self.rect = self.img.get_rect()
+        self.is_idle = True
         
         # Ajustar el rect para que el centro coincida
         self.rect = self.img.get_rect()
@@ -196,7 +198,70 @@ class Hero(Sprite):
             sprites.append(scaled_sprite)
 
         return sprites
+    
+    def idle(self):
+        sprite_width = 64
+        sprite_height = 64
+        num_sprites = 12
+        sprites = []
+        for j in range(num_sprites):
+            rect = pygame.Rect(j * sprite_width, 0, sprite_width, sprite_height)
+            sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
 
+            bounding_rect = sprite.get_bounding_rect()
+            sprite = sprite.subsurface(bounding_rect)
+
+            scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
+            sprites.append(scaled_sprite)
+        self.sprites = sprites
+        if self.direction == "left":
+            sprites = []
+            for j in range(num_sprites):
+                rect = pygame.Rect(j * sprite_width, 64, sprite_width, sprite_height)
+                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
+
+                bounding_rect = sprite.get_bounding_rect()
+                sprite = sprite.subsurface(bounding_rect)
+
+                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
+                sprites.append(scaled_sprite)
+            self.sprites = sprites
+        elif self.direction == "right":
+            sprites = []
+            for j in range(num_sprites):
+                rect = pygame.Rect(j * sprite_width, 128, sprite_width, sprite_height)
+                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
+
+                bounding_rect = sprite.get_bounding_rect()
+                sprite = sprite.subsurface(bounding_rect)
+
+                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
+                sprites.append(scaled_sprite)
+            self.sprites = sprites
+        elif self.direction == "up":
+            sprites = []
+            for j in range(num_sprites):
+                rect = pygame.Rect(j * sprite_width, 256, sprite_width, sprite_height)
+                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
+
+                bounding_rect = sprite.get_bounding_rect()
+                sprite = sprite.subsurface(bounding_rect)
+
+                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
+                sprites.append(scaled_sprite)
+            self.sprites = sprites
+        elif self.direction == "down":
+            sprites = []
+            for j in range(num_sprites):
+                rect = pygame.Rect(j * sprite_width, 192, sprite_width, sprite_height)
+                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
+
+                bounding_rect = sprite.get_bounding_rect()
+                sprite = sprite.subsurface(bounding_rect)
+
+                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
+                sprites.append(scaled_sprite)
+            self.sprites = sprites
 
     def move(self, keys, rocks_group):
         move = 15
@@ -204,18 +269,48 @@ class Hero(Sprite):
         # Simular movimiento horizontal
         proposed_rect = self.rect.copy()
         if keys[pygame.K_LEFT]:
+            sprite_width = 64
+            sprite_height = 64
+            num_sprites = 8
             proposed_rect.x -= move
+            sprites = []
+            for j in range(num_sprites):
+                rect = pygame.Rect(j * sprite_width, 64, sprite_width, sprite_height)
+                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
+
+                bounding_rect = sprite.get_bounding_rect()
+                sprite = sprite.subsurface(bounding_rect)
+
+                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
+                sprites.append(scaled_sprite)
+            self.sprites = sprites
             if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
                 self.rect.x -= move
             if self.rect.x < 0:
                 self.rect.x = length
+            self.direction = "left"
 
         if keys[pygame.K_RIGHT]:
+            sprite_width = 64
+            sprite_height = 64
+            num_sprites = 8
             proposed_rect.x += move
+            sprites = []
+            for j in range(num_sprites):
+                rect = pygame.Rect(j * sprite_width, 128, sprite_width, sprite_height)
+                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
+
+                bounding_rect = sprite.get_bounding_rect()
+                sprite = sprite.subsurface(bounding_rect)
+
+                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
+                sprites.append(scaled_sprite)
+            self.sprites = sprites
             if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
                 self.rect.x += move
             if self.rect.x > length:
                 self.rect.x = 0
+            self.direction = "right"
 
         # Simular movimiento vertical
         proposed_rect = self.rect.copy()
@@ -225,6 +320,7 @@ class Hero(Sprite):
                 self.rect.y -= move
             if self.rect.y < 0:
                 self.rect.y = height
+            self.direction = "up"
 
         if keys[pygame.K_DOWN]:
             proposed_rect.y += move
@@ -232,8 +328,11 @@ class Hero(Sprite):
                 self.rect.y += move
             if self.rect.y > height:
                 self.rect.y = 0
+            self.direction = "down"
 
     def update(self):
+        if self.is_idle():
+            self.idle()
         update_rate = 5
         self.sprite_idx += 1
         if self.sprite_idx >= update_rate * len(self.sprites):
