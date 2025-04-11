@@ -167,172 +167,107 @@ class Hero(Sprite):
         super().__init__()
         self.sprite_sheet_idle = pygame.image.load("sprites/mono/PNG/Unarmed_Idle/Unarmed_Idle_full.png")
         self.sprite_sheet_run = pygame.image.load("sprites/mono/PNG/Unarmed_Run/Unarmed_Run_full.png")
+        self.sprite_sheet_attack = pygame.image.load("sprites/mono/PNG/Sword_Walk_Attack/Sword_Walk_Attack_full.png")
         
-        self.sprites = self.cut_sprites()
-        
+        self.sprites = self.cut_sprites(self.sprite_sheet_idle)
         self.sprite_idx = 0
         self.img = self.sprites[self.sprite_idx]
         self.rect = self.img.get_rect()
         self.is_idle = True
-        
-        # Ajustar el rect para que el centro coincida
-        self.rect = self.img.get_rect()
-        """self.rect.center = (length // 2, height // 2)  # Centrar en pantalla"""
+        self.direction = "down"  # Dirección inicial
 
-    def cut_sprites(self):
+    def cut_sprites(self, sprite_sheet, y_offset=0, num_sprites=8):
         sprite_width = 64
         sprite_height = 64
-        num_sprites = 12
 
         sprites = []
         for j in range(num_sprites):
-            rect = pygame.Rect(j * sprite_width, 0, sprite_width, sprite_height)
-            sprite = self.sprite_sheet_idle.subsurface(rect).copy()  # Copia para evitar problemas
+            rect = pygame.Rect(j * sprite_width, y_offset, sprite_width, sprite_height)
+            sprite = sprite_sheet.subsurface(rect).copy()
 
             # Recortar el espacio transparente automáticamente
             bounding_rect = sprite.get_bounding_rect()
             sprite = sprite.subsurface(bounding_rect)
-            
+
             # Escalar el sprite al tamaño del héroe
             scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
             sprites.append(scaled_sprite)
 
         return sprites
-    
-    def idle(self):
-        sprite_width = 64
-        sprite_height = 64
-        num_sprites = 12
-        sprites = []
-        for j in range(num_sprites):
-            rect = pygame.Rect(j * sprite_width, 0, sprite_width, sprite_height)
-            sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
 
-            bounding_rect = sprite.get_bounding_rect()
-            sprite = sprite.subsurface(bounding_rect)
+    def set_run_animation(self, direction):
+        """Configura la animación de correr según la dirección."""
+        if direction == "left":
+            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset=64)
+        elif direction == "right":
+            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset=128)
+        elif direction == "up":
+            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset=192)
+        elif direction == "down":
+            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset=0)
 
-            scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
-            sprites.append(scaled_sprite)
-        self.sprites = sprites
+    def set_idle_animation(self):
+        """Configura la animación de reposo según la dirección."""
         if self.direction == "left":
-            sprites = []
-            for j in range(num_sprites):
-                rect = pygame.Rect(j * sprite_width, 64, sprite_width, sprite_height)
-                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
-
-                bounding_rect = sprite.get_bounding_rect()
-                sprite = sprite.subsurface(bounding_rect)
-
-                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
-                sprites.append(scaled_sprite)
-            self.sprites = sprites
+            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset=64, num_sprites=12)
         elif self.direction == "right":
-            sprites = []
-            for j in range(num_sprites):
-                rect = pygame.Rect(j * sprite_width, 128, sprite_width, sprite_height)
-                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
-
-                bounding_rect = sprite.get_bounding_rect()
-                sprite = sprite.subsurface(bounding_rect)
-
-                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
-                sprites.append(scaled_sprite)
-            self.sprites = sprites
+            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset=128, num_sprites=12)
         elif self.direction == "up":
-            sprites = []
-            for j in range(num_sprites):
-                rect = pygame.Rect(j * sprite_width, 256, sprite_width, sprite_height)
-                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
-
-                bounding_rect = sprite.get_bounding_rect()
-                sprite = sprite.subsurface(bounding_rect)
-
-                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
-                sprites.append(scaled_sprite)
-            self.sprites = sprites
+            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset=192, num_sprites=4)
         elif self.direction == "down":
-            sprites = []
-            for j in range(num_sprites):
-                rect = pygame.Rect(j * sprite_width, 192, sprite_width, sprite_height)
-                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
-
-                bounding_rect = sprite.get_bounding_rect()
-                sprite = sprite.subsurface(bounding_rect)
-
-                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
-                sprites.append(scaled_sprite)
-            self.sprites = sprites
+            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset=0, num_sprites=12)
 
     def move(self, keys, rocks_group):
         move = 15
+        self.is_idle = True  # Asume que el héroe está en reposo hasta que se detecte movimiento
 
         # Simular movimiento horizontal
         proposed_rect = self.rect.copy()
         if keys[pygame.K_LEFT]:
-            sprite_width = 64
-            sprite_height = 64
-            num_sprites = 8
+            self.is_idle = False
+            self.set_run_animation("left")  # Cambiar a animación de correr hacia la izquierda
             proposed_rect.x -= move
-            sprites = []
-            for j in range(num_sprites):
-                rect = pygame.Rect(j * sprite_width, 64, sprite_width, sprite_height)
-                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
-
-                bounding_rect = sprite.get_bounding_rect()
-                sprite = sprite.subsurface(bounding_rect)
-
-                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
-                sprites.append(scaled_sprite)
-            self.sprites = sprites
             if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
                 self.rect.x -= move
             if self.rect.x < 0:
-                self.rect.x = length
+                self.rect.x = Hero.length
             self.direction = "left"
 
         if keys[pygame.K_RIGHT]:
-            sprite_width = 64
-            sprite_height = 64
-            num_sprites = 8
+            self.is_idle = False
+            self.set_run_animation("right")  # Cambiar a animación de correr hacia la derecha
             proposed_rect.x += move
-            sprites = []
-            for j in range(num_sprites):
-                rect = pygame.Rect(j * sprite_width, 128, sprite_width, sprite_height)
-                sprite = self.sprite_sheet_run.subsurface(rect).copy()  # Cambiar a sprite_sheet_run
-
-                bounding_rect = sprite.get_bounding_rect()
-                sprite = sprite.subsurface(bounding_rect)
-
-                scaled_sprite = pygame.transform.scale(sprite, (Hero.hero_size, Hero.hero_size))
-                sprites.append(scaled_sprite)
-            self.sprites = sprites
             if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
                 self.rect.x += move
-            if self.rect.x > length:
+            if self.rect.x > Hero.length:
                 self.rect.x = 0
             self.direction = "right"
 
         # Simular movimiento vertical
         proposed_rect = self.rect.copy()
         if keys[pygame.K_UP]:
+            self.is_idle = False
+            self.set_run_animation("up")  # Cambiar a animación de correr hacia arriba
             proposed_rect.y -= move
             if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
                 self.rect.y -= move
             if self.rect.y < 0:
-                self.rect.y = height
+                self.rect.y = Hero.height
             self.direction = "up"
 
         if keys[pygame.K_DOWN]:
+            self.is_idle = False
+            self.set_run_animation("down")  # Cambiar a animación de correr hacia abajo
             proposed_rect.y += move
             if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
                 self.rect.y += move
-            if self.rect.y > height:
+            if self.rect.y > Hero.height:
                 self.rect.y = 0
             self.direction = "down"
 
     def update(self):
-        if self.is_idle():
-            self.idle()
+        if self.is_idle:
+            self.set_idle_animation()  # Cambiar a la animación de reposo según la dirección
         update_rate = 5
         self.sprite_idx += 1
         if self.sprite_idx >= update_rate * len(self.sprites):
@@ -342,7 +277,6 @@ class Hero(Sprite):
     def draw(self):
         screen.blit(self.img, self.rect)
         pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)  # Dibuja la hitbox en negro con borde de 2px
-
 
 
 # Configuración de FPS
