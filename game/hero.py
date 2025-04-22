@@ -175,6 +175,9 @@ class Hero(Sprite):
         self.rect = self.img.get_rect()
         self.is_idle = True
         self.direction = "down"  # Dirección inicial
+        self.is_attacking = False
+        self.attack_timer = 0
+        self.attack_duration = 30  # Duración del ataque en segundos
 
     def cut_sprites(self, sprite_sheet, y_offset=0, num_sprites=8):
         sprite_width = 64
@@ -198,24 +201,35 @@ class Hero(Sprite):
     def set_run_animation(self, direction):
         """Configura la animación de correr según la dirección."""
         if direction == "left":
-            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset=64)
+            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset = 64)
         elif direction == "right":
-            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset=128)
+            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset = 128)
         elif direction == "up":
-            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset=192)
+            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset = 192)
         elif direction == "down":
-            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset=0)
+            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset = 0)
+    
+    def set_attack_animation(self, direction):
+        """Configura la animación de atacar según la dirección."""
+        if direction == "left":
+            self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset = 64, num_sprites = 6)
+        elif direction == "right":
+            self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset = 128, num_sprites = 6)
+        elif direction == "up":
+            self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset = 192, num_sprites = 6)
+        elif direction == "down":
+            self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset = 0, num_sprites = 6)
 
     def set_idle_animation(self):
         """Configura la animación de reposo según la dirección."""
         if self.direction == "left":
-            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset=64, num_sprites=12)
+            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset = 64, num_sprites = 12)
         elif self.direction == "right":
-            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset=128, num_sprites=12)
+            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset = 128, num_sprites = 12)
         elif self.direction == "up":
-            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset=192, num_sprites=4)
+            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset = 192, num_sprites = 4)
         elif self.direction == "down":
-            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset=0, num_sprites=12)
+            self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset = 0, num_sprites = 12)
 
     def move(self, keys, rocks_group):
         move = 15
@@ -264,14 +278,33 @@ class Hero(Sprite):
             if self.rect.y > Hero.height:
                 self.rect.y = 0
             self.direction = "down"
+    
+    def attack(self, keys, rocks_group):
+        """Configura la animacion de ataque según la dirección actual."""
+        if keys[pygame.K_f]:
+            self.is_idle = False
+            self.set_attack_animation(self.direction) # Cambiar a la animación de ataque según la dirección
+            return True
+        return False
+
 
     def update(self):
-        if self.is_idle:
-            self.set_idle_animation()  # Cambiar a la animación de reposo según la dirección
+        if self.is_attacking:
+            self.attack_timer += 1
+            if self.attack_timer >= self.attack_duration:
+                self.is_attacking = False
+                self.attack_timer = 0
+        elif self.is_idle:
+            self.set_idle_animation()
+
         update_rate = 5
         self.sprite_idx += 1
         if self.sprite_idx >= update_rate * len(self.sprites):
             self.sprite_idx = 0
+            if self.is_attacking:  # Si estaba atacando, volver a idle
+                self.is_attacking = False
+                self.attack_timer = 0
+        
         self.img = self.sprites[self.sprite_idx // update_rate]
 
     def draw(self):
@@ -300,7 +333,12 @@ while run:
             if event.key == pygame.K_ESCAPE:
                 run = False
 
-    hero.move(keys, rocks_group)
+    # Primero comprueba si está atacando
+    is_attacking = hero.attack(keys, rocks_group)
+
+    # Solo permite moverse si no está atacando
+    if not is_attacking:
+        hero.move(keys, rocks_group)
 
     # Comprobar colisions
     horitzontal_collision(hero, rocks_group)
