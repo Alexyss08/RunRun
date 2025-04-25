@@ -198,6 +198,32 @@ class Hero(Sprite):
 
         return sprites
 
+    def cut_sprites_non_auto_cut(self, sprite_sheet, y_offset=0, num_sprites=8, margin_left=0, margin_right=0, margin_top=0, margin_bottom=0, scale_factor=1.0):
+        sprite_width = 64
+        sprite_height = 64
+
+        sprites = []
+        for j in range(num_sprites):
+            # Obtener el sprite completo
+            rect = pygame.Rect(j * sprite_width, y_offset, sprite_width, sprite_height)
+            sprite = sprite_sheet.subsurface(rect).copy()
+            
+            # Crear un nuevo rect con los márgenes aplicados
+            new_width = sprite_width - margin_left - margin_right
+            new_height = sprite_height - margin_top - margin_bottom
+            new_rect = pygame.Rect(margin_left, margin_top, new_width, new_height)
+            
+            # Recortar el sprite según los márgenes especificados
+            sprite = sprite.subsurface(new_rect)
+            
+            # Escalar el sprite con diferentes factores para ancho y alto
+            new_width = int(Hero.hero_size * scale_factor)  # Más ancho
+            new_height = Hero.hero_size  # Altura original de la hitbox
+            scaled_sprite = pygame.transform.scale(sprite, (new_width, new_height))
+            sprites.append(scaled_sprite)
+
+        return sprites
+
     def set_run_animation(self, direction):
         """Configura la animación de correr según la dirección."""
         if direction == "left":
@@ -212,13 +238,49 @@ class Hero(Sprite):
     def set_attack_animation(self, direction):
         """Configura la animación de atacar según la dirección."""
         if direction == "left":
-            self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset = 64, num_sprites = 6)
+            self.sprites = self.cut_sprites_non_auto_cut(
+                self.sprite_sheet_attack, 
+                y_offset=64, 
+                num_sprites=6,
+                margin_left=5,
+                margin_right=25,
+                margin_top=20,
+                margin_bottom=20,
+                scale_factor=2.7  # Más ancho horizontalmente
+            )
         elif direction == "right":
-            self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset = 128, num_sprites = 6)
+            self.sprites = self.cut_sprites_non_auto_cut(
+                self.sprite_sheet_attack, 
+                y_offset=128, 
+                num_sprites=6,
+                margin_left=20,
+                margin_right=10,
+                margin_top=5,
+                margin_bottom=5,
+                scale_factor=1.8  # Más ancho horizontalmente
+            )
         elif direction == "up":
-            self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset = 192, num_sprites = 6)
+            self.sprites = self.cut_sprites_non_auto_cut(
+                self.sprite_sheet_attack, 
+                y_offset=192, 
+                num_sprites=6,
+                margin_left=20,
+                margin_right=10,
+                margin_top=5,
+                margin_bottom=5,
+                scale_factor=1.8  # Más ancho horizontalmente
+            )
         elif direction == "down":
-            self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset = 0, num_sprites = 6)
+            self.sprites = self.cut_sprites_non_auto_cut(
+                self.sprite_sheet_attack, 
+                y_offset=0, 
+                num_sprites=6,
+                margin_left=20,
+                margin_right=10,
+                margin_top=5,
+                margin_bottom=5,
+                scale_factor=1.8  # Más ancho horizontalmente
+            )
 
     def set_idle_animation(self):
         """Configura la animación de reposo según la dirección."""
@@ -308,8 +370,21 @@ class Hero(Sprite):
         self.img = self.sprites[self.sprite_idx // update_rate]
 
     def draw(self):
-        screen.blit(self.img, self.rect)
-        pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)  # Dibuja la hitbox en negro con borde de 2px
+        # Calcular la posición para centrar el sprite en la hitbox
+        sprite_rect = self.img.get_rect()
+        
+        # Si está atacando hacia la izquierda, alinear con el borde derecho
+        if self.direction == "left" and any(sprite.get_width() > Hero.hero_size for sprite in self.sprites):
+            pos_x = self.rect.right - sprite_rect.width  # Alinear con el borde derecho
+            pos_y = self.rect.centery - sprite_rect.height // 2
+        else:
+            # Para el resto de casos, centrar el sprite
+            pos_x = self.rect.centerx - sprite_rect.width // 2
+            pos_y = self.rect.centery - sprite_rect.height // 2
+        
+        # Dibujar el sprite
+        screen.blit(self.img, (pos_x, pos_y))
+        pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)  # Dibuja la hitbox en negro
 
 
 # Configuración de FPS
