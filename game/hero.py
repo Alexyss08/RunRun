@@ -1,8 +1,10 @@
 import pygame
 import os
 import sys
+import random
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from assets.mapa_objects import generate_random_map, save_map_to_file
+from Enemy import Enemy
 from pygame.sprite import Sprite
 from pygame.sprite import Group
 
@@ -253,33 +255,33 @@ class Hero(Sprite):
                 self.sprite_sheet_attack, 
                 y_offset=128, 
                 num_sprites=6,
-                margin_left=20,
-                margin_right=10,
-                margin_top=5,
-                margin_bottom=5,
-                scale_factor=1.8  # Más ancho horizontalmente
+                margin_left=5,
+                margin_right=5,
+                margin_top=20,
+                margin_bottom=20,
+                scale_factor=4  # Más ancho horizontalmente
             )
         elif direction == "up":
             self.sprites = self.cut_sprites_non_auto_cut(
                 self.sprite_sheet_attack, 
                 y_offset=192, 
                 num_sprites=6,
-                margin_left=20,
+                margin_left=10,
                 margin_right=10,
-                margin_top=5,
-                margin_bottom=5,
-                scale_factor=1.8  # Más ancho horizontalmente
+                margin_top=13,
+                margin_bottom=20,
+                scale_factor=3  # Más ancho horizontalmente
             )
         elif direction == "down":
             self.sprites = self.cut_sprites_non_auto_cut(
                 self.sprite_sheet_attack, 
                 y_offset=0, 
                 num_sprites=6,
-                margin_left=20,
-                margin_right=10,
-                margin_top=5,
-                margin_bottom=5,
-                scale_factor=1.8  # Más ancho horizontalmente
+                margin_left=15,
+                margin_right=15,
+                margin_top=21,
+                margin_bottom=13,
+                scale_factor=2.5  # Más ancho horizontalmente
             )
 
     def set_idle_animation(self):
@@ -341,11 +343,31 @@ class Hero(Sprite):
                 self.rect.y = 0
             self.direction = "down"
     
-    def attack(self, keys, rocks_group):
-        """Configura la animacion de ataque según la dirección actual."""
+    def attack(self, keys, rocks_group, enemy_group):
+        """Configura la animación de ataque y detecta colisiones con enemigos."""
         if keys[pygame.K_f]:
             self.is_idle = False
-            self.set_attack_animation(self.direction) # Cambiar a la animación de ataque según la dirección
+            self.is_attacking = True
+            self.set_attack_animation(self.direction)
+            
+            # Crear un rect para el área de ataque
+            attack_rect = self.rect.copy()
+            if self.direction == "left":
+                attack_rect.width *= 2
+                attack_rect.x -= attack_rect.width
+            elif self.direction == "right":
+                attack_rect.width *= 2
+            elif self.direction == "up":
+                attack_rect.height *= 2
+                attack_rect.y -= attack_rect.height
+            elif self.direction == "down":
+                attack_rect.height *= 2
+
+            # Comprobar colisiones con enemigos
+            for enemy in enemy_group:
+                if attack_rect.colliderect(enemy.rect):
+                    enemy_group.remove(enemy)  # Eliminar el enemigo
+
             return True
         return False
 
@@ -396,6 +418,36 @@ hero = Hero()
 spawn_x, spawn_y = set_spawn_point()
 hero.rect.center = (spawn_x, spawn_y)  # Establecer la posición inicial del héroe
 
+# Crear grupo de enemigos
+enemy_group = pygame.sprite.Group()
+
+# Función para generar enemigos
+def spawn_enemies(num_enemies):
+    for _ in range(num_enemies):
+        # Generar posiciones aleatorias que no colisionen con rocas
+        while True:
+            x = random.randint(0, Hero.length - Hero.hero_size)
+            y = random.randint(0, Hero.height - Hero.hero_size)
+            
+            # Crear un rect temporal para verificar colisiones
+            temp_rect = pygame.Rect(x, y, Hero.hero_size, Hero.hero_size)
+            
+            # Verificar que no colisiona con rocas
+            collision = False
+            for rock in rocks_group:
+                if temp_rect.colliderect(rock.rect):
+                    collision = True
+                    break
+            
+            # Si no hay colisión, crear el enemigo
+            if not collision:
+                enemy = Enemy(x, y)
+                enemy_group.add(enemy)
+                break
+
+# Generar enemigos iniciales
+spawn_enemies(5)  # Ajusta el número según necesites
+
 # Main loop
 run = True
 while run:
@@ -409,11 +461,16 @@ while run:
                 run = False
 
     # Primero comprueba si está atacando
-    is_attacking = hero.attack(keys, rocks_group)
+    is_attacking = hero.attack(keys, rocks_group, enemy_group)
 
     # Solo permite moverse si no está atacando
     if not is_attacking:
         hero.move(keys, rocks_group)
+
+    # Actualizar y dibujar enemigos
+    for enemy in enemy_group:
+        enemy.update()
+        enemy.draw(screen)
 
     # Comprobar colisions
     horitzontal_collision(hero, rocks_group)
