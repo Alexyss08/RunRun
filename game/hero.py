@@ -467,11 +467,6 @@ while run:
     if not is_attacking:
         hero.move(keys, rocks_group)
 
-    # Actualizar y dibujar enemigos
-    for enemy in enemy_group:
-        enemy.update()
-        enemy.draw(screen)
-
     # Comprobar colisions
     horitzontal_collision(hero, rocks_group)
     vertical_collision(hero, rocks_group)
@@ -485,6 +480,11 @@ while run:
     
     for block in gold:
         screen.blit(block.gold_image, block.rect)
+
+    # Actualizar y dibujar enemigos DESPUÉS del terreno
+    for enemy in enemy_group:
+        enemy.update(hero, rocks_group)
+        enemy.draw(screen)
 
     hero.update()
     hero.draw()

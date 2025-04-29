@@ -1,6 +1,8 @@
 import pygame
 from pygame.sprite import Sprite
 import random
+import math
+
 pygame.init()
 
 class Enemy(Sprite):
@@ -10,70 +12,49 @@ class Enemy(Sprite):
 
     def __init__(self, x, y):
         super().__init__()
-        # Cambiar a una imagen de enemigo apropiada
-        self.sprite_sheet = pygame.image.load("sprites/mono/PNG/Unarmed_Idle/Unarmed_Idle_full.png")
-        self.sprites = self.cut_sprites()
-        self.sprite_idx = 0
-        self.img = self.sprites[self.sprite_idx]
-        self.rect = self.img.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.direction = random.choice(["left", "right", "up", "down"])
-        self.move_timer = 0
-        self.move_delay = 30
-        self.speed = 5
+        try:
+            # Cargar una única imagen
+            self.image = pygame.image.load("assets/mapa/PNG/tree_10.png").convert_alpha()
+            # Escalar la imagen al tamaño deseado
+            self.image = pygame.transform.scale(self.image, (Enemy.enemy_size, Enemy.enemy_size))
+            self.rect = self.image.get_rect()
+            self.rect.x = x
+            self.rect.y = y
+            self.speed = 3  # Velocidad reducida para mejor control
+            self.previous_pos = self.rect.copy()  # Guardar posición anterior
+        except pygame.error as e:
+            print(f"Error al cargar la imagen del enemigo: {e}")
+            raise
 
-    def cut_sprites(self, y_offset=0, num_sprites=8):
-        sprite_width = 64
-        sprite_height = 64
-        sprites = []
-        for j in range(num_sprites):
-            rect = pygame.Rect(j * sprite_width, y_offset, sprite_width, sprite_height)
-            sprite = self.sprite_sheet.subsurface(rect).copy()
-            
-            # Recortar el espacio transparente automáticamente
-            bounding_rect = sprite.get_bounding_rect()
-            sprite = sprite.subsurface(bounding_rect)
-            
-            scaled_sprite = pygame.transform.scale(sprite, (Enemy.enemy_size, Enemy.enemy_size))
-            sprites.append(scaled_sprite)
-        return sprites
+    def move_towards_hero(self, hero, rocks_group):
+        # Guardar posición anterior
+        self.previous_pos = self.rect.copy()
 
-    def move(self):
-        # Implementar movimiento
-        if self.direction == "left":
-            self.rect.x -= self.speed
-            if self.rect.left < 0:
-                self.direction = "right"
-        elif self.direction == "right":
-            self.rect.x += self.speed
-            if self.rect.right > self.length:
-                self.direction = "left"
-        elif self.direction == "up":
-            self.rect.y -= self.speed
-            if self.rect.top < 0:
-                self.direction = "down"
-        elif self.direction == "down":
-            self.rect.y += self.speed
-            if self.rect.bottom > self.height:
-                self.direction = "up"
-
-    def update(self):
-        # Actualizar movimiento
-        self.move_timer += 1
-        if self.move_timer >= self.move_delay:
-            self.move_timer = 0
-            self.direction = random.choice(["left", "right", "up", "down"])
+        # Calcular dirección hacia el héroe
+        dx = hero.rect.centerx - self.rect.centerx
+        dy = hero.rect.centery - self.rect.centery
         
-        self.move()
+        # Normalizar el vector de dirección
+        distance = math.sqrt(dx**2 + dy**2)
+        if distance != 0:
+            dx = dx / distance
+            dy = dy / distance
 
-        # Actualizar animación
-        update_rate = 5
-        self.sprite_idx += 1
-        if self.sprite_idx >= update_rate * len(self.sprites):
-            self.sprite_idx = 0
-        self.img = self.sprites[self.sprite_idx // update_rate]
+        # Mover en X
+        self.rect.x += dx * self.speed
+        # Comprobar colisión en X
+        if pygame.sprite.spritecollideany(self, rocks_group):
+            self.rect.x = self.previous_pos.x
+
+        # Mover en Y
+        self.rect.y += dy * self.speed
+        # Comprobar colisión en Y
+        if pygame.sprite.spritecollideany(self, rocks_group):
+            self.rect.y = self.previous_pos.y
+
+    def update(self, hero, rocks_group):
+        self.move_towards_hero(hero, rocks_group)
 
     def draw(self, screen):
-        screen.blit(self.img, self.rect)
-        pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)  # Cambié el color a rojo para distinguir mejor
+        screen.blit(self.image, self.rect)
+        pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)  # Hitbox en rojo
