@@ -1,6 +1,5 @@
 import pygame
 from pygame.sprite import Sprite
-import random
 import math
 
 pygame.init()
@@ -12,19 +11,14 @@ class Enemy(Sprite):
 
     def __init__(self, x, y):
         super().__init__()
-        try:
-            # Cargar una única imagen
-            self.image = pygame.image.load("assets/mapa/PNG/tree_10.png").convert_alpha()
-            # Escalar la imagen al tamaño deseado
-            self.image = pygame.transform.scale(self.image, (Enemy.enemy_size, Enemy.enemy_size))
-            self.rect = self.image.get_rect()
-            self.rect.x = x
-            self.rect.y = y
-            self.speed = 3  # Velocidad reducida para mejor control
-            self.previous_pos = self.rect.copy()  # Guardar posición anterior
-        except pygame.error as e:
-            print(f"Error al cargar la imagen del enemigo: {e}")
-            raise
+        self.image = pygame.image.load("assets/mapa/PNG/tree_10.png").convert_alpha()
+        # Escalar la imagen al tamaño deseado
+        self.image = pygame.transform.scale(self.image, (Enemy.enemy_size, Enemy.enemy_size))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = 3  # Velocidad reducida para mejor control
+        self.previous_pos = self.rect.copy()  # Guardar posición anterior
 
     def move_towards_hero(self, hero, rocks_group):
         # Guardar posición anterior
