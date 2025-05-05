@@ -169,6 +169,8 @@ def spawn_enemies():
                     coord_x = Block.rock_size * j
                     coord_y = Block.rock_size * i
                     enemy = Enemy(coord_x, coord_y)  # Crear un enemigo en las coordenadas
+                    enemy.rect.x = coord_x  # Asegurarse de que la posición se establece correctamente
+                    enemy.rect.y = coord_y
                     enemy_group.add(enemy)  # Añadir el enemigo al grupo
             i += 1
 
@@ -211,7 +213,7 @@ while run:
     # Actualizar y dibujar enemigos DESPUÉS del terreno
     for enemy in enemy_group:
         enemy.update(hero, rocks_group)
-        enemy.draw(screen)
+        enemy.draw()
 
     hero.update()
     hero.draw()
