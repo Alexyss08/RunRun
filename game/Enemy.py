@@ -3,11 +3,12 @@ from pygame.sprite import Sprite
 import math
 
 pygame.init()
+height = pygame.display.Info().current_h
+length = pygame.display.Info().current_w
+enemy_size = height // 20
 
 class Enemy(Sprite):
-    height = pygame.display.Info().current_h
-    length = pygame.display.Info().current_w
-    enemy_size = height // 20
+    
 
     def __init__(self, x, y):
         super().__init__()
@@ -43,7 +44,26 @@ class Enemy(Sprite):
             sprite = sprite.subsurface(bounding_rect)
 
             # Escalar el sprite al tamaño del héroe
-            scaled_sprite = pygame.transform.scale(sprite, (Enemy.enemy_size, Enemy.enemy_size))
+            scaled_sprite = pygame.transform.scale(sprite, (enemy_size, enemy_size))
+            sprites.append(scaled_sprite)
+
+        return sprites
+    
+    def cut_sprites_attack(self, sprite_sheet, y_offset=0, num_sprites=10):
+        sprite_width = 64
+        sprite_height = 64
+
+        sprites = []
+        for j in range(num_sprites):
+            rect = pygame.Rect(j * sprite_width, y_offset, sprite_width, sprite_height)
+            sprite = sprite_sheet.subsurface(rect).copy()
+
+            # Recortar el espacio transparente automáticamente
+            bounding_rect = sprite.get_bounding_rect()
+            sprite = sprite.subsurface(bounding_rect)
+
+            # Escalar el sprite al tamaño del héroe
+            scaled_sprite = pygame.transform.scale(sprite, (enemy_size, enemy_size))
             sprites.append(scaled_sprite)
 
         return sprites
@@ -51,13 +71,13 @@ class Enemy(Sprite):
     def set_run_animation(self, direction):
         """Configura la animación de correr según la dirección."""
         if direction == "left":
-            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset = 64)
-        elif direction == "right":
             self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset = 128)
-        elif direction == "up":
+        elif direction == "right":
             self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset = 192)
+        elif direction == "up":
+            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset = 64)
         elif direction == "down":
-            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset = 0)
+            self.sprites = self.cut_sprites(self.sprite_sheet_run, y_offset = 0)    
 
     def start_attack(self):
         if not self.is_attacking:
@@ -65,12 +85,12 @@ class Enemy(Sprite):
             self.attack_timer = 0
             # Cargar sprites de ataque según la dirección
             if self.direction == "left":
-                self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset=64)
-            elif self.direction == "right":
                 self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset=128)
-            elif self.direction == "up":
+            elif self.direction == "right":
                 self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset=192)
-            else:  # down
+            elif self.direction == "up":
+                self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset=64)
+            elif self.direction == "down":
                 self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset=0)
             self.sprite_idx = 0
 
@@ -118,7 +138,7 @@ class Enemy(Sprite):
                             (hero.rect.centery - self.rect.centery)**2)
         
         # Si está lo suficientemente cerca, atacar
-        if distance < self.enemy_size * 2 and not self.is_attacking:
+        if distance < enemy_size * 2 and not self.is_attacking:
             self.start_attack()
         
         self.sprite_idx += 1
@@ -140,7 +160,7 @@ class Enemy(Sprite):
         sprite_rect = self.img.get_rect()
         
         # Si está atacando hacia la izquierda, alinear con el borde derecho
-        if self.direction == "left" and any(sprite.get_width() > Enemy.enemy_size for sprite in self.sprites):
+        if self.direction == "left" and any(sprite.get_width() > enemy_size for sprite in self.sprites):
             pos_x = self.rect.right - sprite_rect.width  # Alinear con el borde derecho
             pos_y = self.rect.centery - sprite_rect.height // 2
         else:
