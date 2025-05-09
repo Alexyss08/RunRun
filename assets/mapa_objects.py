@@ -52,7 +52,7 @@ def generate_valid_map_recursive(rows=10, cols=18, characters="#GTES"):
 
         for r in range(rows):
             for c in range(cols):
-                if map_data[r][c] in 'EG' and (r, c) not in visited:
+                if map_data[r][c] in 'E' and (r, c) not in visited:
                     return False
         return True
 

@@ -94,14 +94,14 @@ class Enemy(Sprite):
                 self.sprites = self.cut_sprites(self.sprite_sheet_attack, y_offset=0)
             self.sprite_idx = 0
 
-    def move_towards_hero(self, hero, rocks_group):
+    def move_towards_hero(self, hero, *groups):
         # Guardar posición anterior
         self.previous_pos = self.rect.copy()
 
         # Calcular dirección hacia el héroe
         dx = hero.rect.centerx - self.rect.centerx
         dy = hero.rect.centery - self.rect.centery
-        
+
         # Normalizar el vector de dirección
         distance = math.sqrt(dx**2 + dy**2)
         if distance != 0:
@@ -120,25 +120,25 @@ class Enemy(Sprite):
 
         # Mover en X
         self.rect.x += dx * self.speed
-        # Comprobar colisión en X
-        if pygame.sprite.spritecollideany(self, rocks_group):
+        # Comprobar colisión en X con todos los grupos
+        if any(pygame.sprite.spritecollideany(self, group) for group in groups):
             self.rect.x = self.previous_pos.x
 
         # Mover en Y
         self.rect.y += dy * self.speed
-        # Comprobar colisión en Y
-        if pygame.sprite.spritecollideany(self, rocks_group):
+        # Comprobar colisión en Y con todos los grupos
+        if any(pygame.sprite.spritecollideany(self, group) for group in groups):
             self.rect.y = self.previous_pos.y
 
-    def update(self, hero, rocks_group):
+    def update(self, hero, *groups):
         update_rate = 5
-        
+
         # Calcular distancia al héroe
         distance = math.sqrt((hero.rect.centerx - self.rect.centerx)**2 + 
                             (hero.rect.centery - self.rect.centery)**2)
         
         # Si está lo suficientemente cerca, atacar
-        if distance < enemy_size * 2 and not self.is_attacking:
+        if distance < enemy_size * 1.5 and not self.is_attacking:
             self.start_attack()
         
         self.sprite_idx += 1
@@ -153,7 +153,7 @@ class Enemy(Sprite):
         
         # Solo moverse si no está atacando
         if not self.is_attacking:
-            self.move_towards_hero(hero, rocks_group)
+            self.move_towards_hero(hero, *groups)
 
     def draw(self):
         # Calcular la posición para centrar el sprite en la hitbox

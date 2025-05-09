@@ -139,7 +139,7 @@ class Hero(Sprite):
         elif self.direction == "down":
             self.sprites = self.cut_sprites(self.sprite_sheet_idle, y_offset = 0, num_sprites = 12)
 
-    def move(self, keys, rocks_group):
+    def move(self, keys, *groups):
         move = 15
         self.is_idle = True  # Asume que el héroe está en reposo hasta que se detecte movimiento
 
@@ -149,7 +149,7 @@ class Hero(Sprite):
             self.is_idle = False
             self.set_run_animation("left")  # Cambiar a animación de correr hacia la izquierda
             proposed_rect.x -= move
-            if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
+            if not any(pygame.sprite.spritecollideany(self, group, collided=lambda s, r: proposed_rect.colliderect(r.rect)) for group in groups):
                 self.rect.x -= move
             if self.rect.x < 0:
                 self.rect.x = Hero.length
@@ -159,7 +159,7 @@ class Hero(Sprite):
             self.is_idle = False
             self.set_run_animation("right")  # Cambiar a animación de correr hacia la derecha
             proposed_rect.x += move
-            if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
+            if not any(pygame.sprite.spritecollideany(self, group, collided=lambda s, r: proposed_rect.colliderect(r.rect)) for group in groups):
                 self.rect.x += move
             if self.rect.x > Hero.length:
                 self.rect.x = 0
@@ -171,7 +171,7 @@ class Hero(Sprite):
             self.is_idle = False
             self.set_run_animation("up")  # Cambiar a animación de correr hacia arriba
             proposed_rect.y -= move
-            if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
+            if not any(pygame.sprite.spritecollideany(self, group, collided=lambda s, r: proposed_rect.colliderect(r.rect)) for group in groups):
                 self.rect.y -= move
             if self.rect.y < 0:
                 self.rect.y = Hero.height
@@ -181,7 +181,7 @@ class Hero(Sprite):
             self.is_idle = False
             self.set_run_animation("down")  # Cambiar a animación de correr hacia abajo
             proposed_rect.y += move
-            if not pygame.sprite.spritecollideany(self, rocks_group, collided=lambda s, r: proposed_rect.colliderect(r.rect)):
+            if not any(pygame.sprite.spritecollideany(self, group, collided=lambda s, r: proposed_rect.colliderect(r.rect)) for group in groups):
                 self.rect.y += move
             if self.rect.y > Hero.height:
                 self.rect.y = 0

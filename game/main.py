@@ -28,9 +28,10 @@ class Block(Sprite):
         super().__init__()
         self.rock_image = pygame.image.load("assets/mapa/PNG/stones_6.png")
         self.bg_image = pygame.image.load("assets/mapa/PNG/bg.png")
-        self.gold_image = pygame.image.load("assets/mapa/PNG/decor_3.png") # REPLACE WITH THE CORRECT IMAGE PATH
+        self.gold_image = pygame.image.load("assets/mapa/PNG/gold_rock.png")
         self.rock_image = pygame.transform.scale(self.rock_image, (Block.rock_size, Block.rock_size))
         self.bg_image = pygame.transform.scale(self.bg_image, (Block.rock_size, Block.rock_size))
+        self.gold_image = pygame.transform.scale(self.gold_image, (Block.rock_size, Block.rock_size))
         self.rect_bg = self.bg_image.get_rect()
         self.rect_bg.x = x
         self.rect_bg.y = y
@@ -127,22 +128,24 @@ def set_spawn_point():
             i += 1
     return 0, 0  # Valor por defecto si no se encuentra un punto de spawn
 
-def horitzontal_collision(hero, rocks_group):
-    block = pygame.sprite.spritecollideany(hero, rocks_group)
-    if block:
-        if hero.rect.right > block.rect.left and hero.rect.centerx < block.rect.centerx:
-            hero.rect.right = block.rect.left
-        elif hero.rect.left < block.rect.right and hero.rect.centerx > block.rect.centerx:
-            hero.rect.left = block.rect.right
+def horitzontal_collision(hero, *groups):
+    for group in groups:
+        block = pygame.sprite.spritecollideany(hero, group)
+        if block:
+            if hero.rect.right > block.rect.left and hero.rect.centerx < block.rect.centerx:
+                hero.rect.right = block.rect.left
+            elif hero.rect.left < block.rect.right and hero.rect.centerx > block.rect.centerx:
+                hero.rect.left = block.rect.right
 
 
-def vertical_collision(hero, rocks_group):
-    block = pygame.sprite.spritecollideany(hero, rocks_group)
-    if block:
-        if hero.rect.bottom > block.rect.top and hero.rect.centery < block.rect.centery:
-            hero.rect.bottom = block.rect.top
-        elif hero.rect.top < block.rect.bottom and hero.rect.centery > block.rect.centery:
-            hero.rect.top = block.rect.bottom
+def vertical_collision(hero, *groups):
+    for group in groups:
+        block = pygame.sprite.spritecollideany(hero, group)
+        if block:
+            if hero.rect.bottom > block.rect.top and hero.rect.centery < block.rect.centery:
+                hero.rect.bottom = block.rect.top
+            elif hero.rect.top < block.rect.bottom and hero.rect.centery > block.rect.centery:
+                hero.rect.top = block.rect.bottom
 
 
 # Configuración de FPS
@@ -194,11 +197,11 @@ while run:
 
     # Solo permite moverse si no está atacando
     if not is_attacking:
-        hero.move(keys, rocks_group)
+        hero.move(keys, rocks_group, gold_group)
 
     # Comprobar colisions
-    horitzontal_collision(hero, rocks_group)
-    vertical_collision(hero, rocks_group)
+    horitzontal_collision(hero, rocks_group, gold_group)
+    vertical_collision(hero, rocks_group, gold_group)
 
     # Draw terrain
     for block in terrain:
@@ -212,7 +215,7 @@ while run:
 
     # Actualizar y dibujar enemigos DESPUÉS del terreno
     for enemy in enemy_group:
-        enemy.update(hero, rocks_group)
+        enemy.update(hero, rocks_group, gold_group)
         enemy.draw()
 
     hero.update()
