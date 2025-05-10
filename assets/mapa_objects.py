@@ -26,23 +26,26 @@ def generate_valid_map_recursive(rows=10, cols=18, characters="#GTES"):
         visited = set()
 
         # Encontrar al héroe
+        start_pos = None
         for r in range(rows):
             for c in range(cols):
                 if map_data[r][c] == 'S':
                     start_pos = (r, c)
                     break
-            else:
-                continue
-            break
-        else:
+            if start_pos:
+                break
+        
+        if not start_pos:
             return False
 
         def dfs(r, c):
             if r < 0 or r >= rows or c < 0 or c >= cols:
                 return
-            if (r, c) in visited or map_data[r][c] == '#':
+            # Modificar esta línea para incluir 'G' como obstáculo
+            if (r, c) in visited or map_data[r][c] in '#G':
                 return
             visited.add((r, c))
+            # Buscar en las cuatro direcciones
             dfs(r + 1, c)
             dfs(r - 1, c)
             dfs(r, c + 1)
@@ -50,9 +53,10 @@ def generate_valid_map_recursive(rows=10, cols=18, characters="#GTES"):
 
         dfs(start_pos[0], start_pos[1])
 
+        # Verificar que todos los enemigos sean accesibles
         for r in range(rows):
             for c in range(cols):
-                if map_data[r][c] in 'E' and (r, c) not in visited:
+                if map_data[r][c] == 'E' and (r, c) not in visited:
                     return False
         return True
 
