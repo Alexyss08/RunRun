@@ -171,4 +171,4 @@ class Enemy(Sprite):
         # Dibujar el sprite
         screen = pygame.display.get_surface()
         screen.blit(self.img, (pos_x, pos_y))
-        pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)  # Hitbox en rojo
+        pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)  # Dibuja la hitbox en rojo

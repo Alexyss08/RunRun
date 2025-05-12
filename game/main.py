@@ -15,7 +15,7 @@ length = pygame.display.Info().current_w
 height = pygame.display.Info().current_h
 size = (length, height)
 screen = pygame.display.set_mode(size)
-pygame.display.set_caption("Pantalla del joc")
+pygame.display.set_caption("RunRun")
 
 
 class Block(Sprite):

@@ -9,10 +9,10 @@ def generate_valid_map_recursive(rows=10, cols=18, characters="#GTES"):
 
     def generate_map():
         characters_without_s = characters.replace('S', '')
-        weights = [0.3, 0.1, 0.9, 0.1]  # Pesos para #, G, T, E (sin S)
+        weights = [0.3, 0.1, 0.9, 0.1]  # Probabilidades para #, G, T, E (sin S)
         
         if len(weights) != len(characters_without_s):
-            raise ValueError("El número de pesos no coincide con el número de caracteres disponibles.")
+            raise ValueError("El número de probabilidades no coincide con el número de caracteres disponibles.")
         
         myMap = [''.join(random.choices(characters_without_s, weights, k=cols)) for _ in range(rows)]
         hero_row = random.randint(0, rows - 1)
